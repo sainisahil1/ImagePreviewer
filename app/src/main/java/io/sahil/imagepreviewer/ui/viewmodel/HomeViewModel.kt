@@ -1,6 +1,7 @@
 package io.sahil.imagepreviewer.ui.viewmodel
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,14 +15,14 @@ class HomeViewModel: ViewModel() {
 
     private lateinit var fragmentContext: Context
 
-    var imageLiveData: MutableLiveData<String> = MutableLiveData()
+    var imageLiveData: MutableLiveData<Uri> = MutableLiveData()
 
     private val tag = HomeViewModel::class.java.simpleName
 
     fun fetchImage(){
-        val imageLocation = MyPreferences(fragmentContext).getImageSaveLocation()
-        Log.e(tag, "Image path: $imageLocation")
-        imageLiveData.postValue(imageLocation)
+        val imageUriString = MyPreferences(fragmentContext).getImageSaveLocation()
+        Log.e(tag, "Image path: $imageUriString")
+        imageLiveData.postValue(Uri.parse(imageUriString))
     }
 
     fun saveImage(imageLocation: String){
