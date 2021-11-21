@@ -25,6 +25,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import io.sahil.imagepreviewer.BuildConfig
+import io.sahil.imagepreviewer.R
 import io.sahil.imagepreviewer.databinding.FragmentHomeBinding
 import io.sahil.imagepreviewer.ui.viewmodel.HomeViewModel
 import java.io.File
@@ -33,11 +34,10 @@ class HomeFragment: Fragment() {
 
     private lateinit var fragmentContext: Context
     private lateinit var fragmentHomeBinding: FragmentHomeBinding
-    private lateinit var homeViewModel: HomeViewModel
     private var cameraImageUri: Uri? = null
 
     private val selectImageFromGalleryResult = registerForActivityResult(ActivityResultContracts.GetContent()){
-            uri: Uri? -> uri?.let { showImage(it) }
+            uri: Uri? -> uri?.let { goToEditFragment(it) }
     }
 
     private val captureImageFromCameraResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -47,7 +47,7 @@ class HomeFragment: Fragment() {
             if (result.resultCode == Activity.RESULT_OK){
                 val data = result.data
                 Log.e(tag, "data: ${data.toString()}")
-                cameraImageUri?.let { showImage(it) }
+                cameraImageUri?.let { goToEditFragment(it) }
             }
 
     }
@@ -67,7 +67,6 @@ class HomeFragment: Fragment() {
         }
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -76,8 +75,6 @@ class HomeFragment: Fragment() {
 
         fragmentHomeBinding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        homeViewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
-        homeViewModel.setContext(fragmentContext)
 
         registerOnClick()
 
@@ -89,6 +86,25 @@ class HomeFragment: Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         this.fragmentContext = context
+    }
+
+
+    private fun goToEditFragment(imageUri: Uri){
+
+        val fragment = EditFragment(imageUri)
+
+        activity?.supportFragmentManager?.beginTransaction()
+            ?.replace(R.id.main_frame, fragment, EditFragment::class.java.simpleName)
+            ?.addToBackStack(null)
+            ?.commit()
+
+        /*activity?.supportFragmentManager?.setFragmentResultListener("savedImage"){
+            key, bundle ->
+            if (key.equals("savedImage")){
+
+            }
+        }*/
+
     }
 
 
@@ -130,9 +146,6 @@ class HomeFragment: Fragment() {
             cameraIntent.putExtra("camerafacing", "front")
             cameraIntent.putExtra("previous_mode", "front")
 
-          /*  cameraImageUri = fragmentContext.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues().apply {
-                this.put(MediaStore.Images.Media.TITLE, System.currentTimeMillis())
-            })*/
 
             cameraImageUri = getTmpFileUri()
 
